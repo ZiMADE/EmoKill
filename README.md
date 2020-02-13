@@ -1,4 +1,4 @@
-# EmoKill
+# EmoKill -> Avoid wasting time after detection of Emotet !!!
 
 Emotet process killing tool for Windows OS.  
 EmoKill is based on [EmoCheck of JPCERT/CC](https://github.com/JPCERTCC/EmoCheck), thanks for it.
@@ -16,19 +16,19 @@ Please download from the [Releases](https://github.com/ZiMADE/EmoKill/releases) 
 Latest hash:  
 
 > EmoKill.exe  
->   MD5   : 9865385CFFDA2F6956DBEEA406E6DD12  
->   SHA1  : CA9494B8A98F302CD88575DFBB1421EBE6149594  
->   SHA256: 600CFF67CC6C67ED55E77CE560740459A77345412C38845B20853A4E410F4AE1  
+>   MD5   : 07261DAA0D7673F7F65D422E3944224E  
+>   SHA1  : 5F58AFD7A7EC9877576232ACFAEC058A46843878  
+>   SHA256: 86B13205DF5AF154E99631C728CCD7C4B6846DE7737CE7B471FAAC3DD7C06E79  
 
 > EmoKillConsole.exe  
->   MD5   : BF31F7D4BB6B5FEDD10EC9B6230E2A0B  
->   SHA1  : 30A236F79EA3135626CFB4D422A7494B9AA31B8D  
->   SHA256: 18B7483498B4F561B90A55FB74C073B42FB08B12E40B44183C084E2A6ADD4125  
+>   MD5   : E652FA0AB3782CCF58D595BAEB075B9F  
+>   SHA1  : 9068315EBC395EBE676675716DB7259609AE281A  
+>   SHA256: 72E4B52B8DCC62C393659B6B5909E357E7B9E2F6F512EA78B64DAB76776F42E2  
 
 > EmoKillTest.exe  
->   MD5   : E508926C7A59E6D21641F45410E0A123  
->   SHA1  : 337576963EE7868819A50A9B22BAAEFC8D085A98  
->   SHA256: E3D979E0D1911736DB2634FF229557388DA251FCAD6C77F64C1037191617B7D3  
+>   MD5   : EDFD65A922B324CB824C587EF5711638  
+>   SHA1  : 3EC7D9D8027DAF825DC71F3B0471126AB13E0474  
+>   SHA256: 7D28FB9FBF664390EB992F817E63D256F71C0ECC22D71C836F6B8D4B03D9CBF7  
 
 ## How EmoKill works
 
@@ -93,19 +93,19 @@ Why should you trust EmoKill?
 
 ## How EmoKill detects Emotet
 
-(v1.0.7348.16624)  
+(v1.0.7348.26967)  
 
 Detection of Emotet is a port of the C++ code from [EmoCheck v0.0.2 of JPCERT/CC](https://github.com/JPCERTCC/EmoCheck), thanks for it.
 
 ## Screenshot
 
-(v1.0.7348.16624)  
-<div align="left"><img src="./img/EmoKillConsole.png"></div>
+(v1.0.7348.26967)  
+<div align="left"><img src="./img/EmoKillConsole.png"></div><br>
 <div align="left"><img src="./img/EmoKillTest.png"></div>
 
 ## Releases
 
-- (Feb. 13, 2020) v1.0.7348.16624
+- (Feb. 13, 2020) v1.0.7348.26967
   - Initial release
 
 ### Tested environments
