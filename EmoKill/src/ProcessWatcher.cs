@@ -104,7 +104,6 @@ namespace ZiMADE.EmoKill
 
         private void KillIfEmotetProcess(Process process)
         {
-            throw new Exception("Fatal test error");
             Task.Run(() =>
             {
                 try
