@@ -1,4 +1,4 @@
-# EmoKill
+# EmoKill -> Avoid wasted time after detection of Emotet !!!
 
 Emotet process killing tool for Windows OS.  
 EmoKill is based on [EmoCheck of JPCERT/CC](https://github.com/JPCERTCC/EmoCheck), thanks for it.
@@ -100,7 +100,7 @@ Detection of Emotet is a port of the C++ code from [EmoCheck v0.0.2 of JPCERT/CC
 ## Screenshot
 
 (v1.0.7348.16624)  
-<div align="left"><img src="./img/EmoKillConsole.png"></div>
+<div align="left"><img src="./img/EmoKillConsole.png"></div><br>
 <div align="left"><img src="./img/EmoKillTest.png"></div>
 
 ## Releases
