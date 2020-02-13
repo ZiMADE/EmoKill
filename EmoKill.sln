@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1000
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmoKill", "EmoKill\EmoKill.csproj", "{6D8453EC-1F14-4377-B164-B0E16B13B9C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmoKillConsole", "EmoKillConsole\EmoKillConsole.csproj", "{649CDF18-EC1B-4A6C-AFDD-ADCEDB4AFA90}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmoKillTest", "EmoKillTest\EmoKillTest.csproj", "{DD082B92-C88D-4A15-855B-0DA11CDD33D9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DBB2EF9B-3D08-4549-8798-D425F48FC73E}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{8EAB6372-AFF2-4888-B7FF-1243A836DDB7}"
+	ProjectSection(SolutionItems) = preProject
+		img\EmoKillConsole.png = img\EmoKillConsole.png
+		img\EmoKillTest.png = img\EmoKillTest.png
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6D8453EC-1F14-4377-B164-B0E16B13B9C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D8453EC-1F14-4377-B164-B0E16B13B9C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D8453EC-1F14-4377-B164-B0E16B13B9C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D8453EC-1F14-4377-B164-B0E16B13B9C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{649CDF18-EC1B-4A6C-AFDD-ADCEDB4AFA90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{649CDF18-EC1B-4A6C-AFDD-ADCEDB4AFA90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{649CDF18-EC1B-4A6C-AFDD-ADCEDB4AFA90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{649CDF18-EC1B-4A6C-AFDD-ADCEDB4AFA90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD082B92-C88D-4A15-855B-0DA11CDD33D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD082B92-C88D-4A15-855B-0DA11CDD33D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD082B92-C88D-4A15-855B-0DA11CDD33D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD082B92-C88D-4A15-855B-0DA11CDD33D9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8EAB6372-AFF2-4888-B7FF-1243A836DDB7} = {DBB2EF9B-3D08-4549-8798-D425F48FC73E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4892F86F-0DEA-4B6D-9CC7-4AAFB689C46C}
+	EndGlobalSection
+EndGlobal
