@@ -1,7 +1,11 @@
 # EmoKill -> Avoid wasting time after detection of Emotet !!!
 
-Emotet process killing tool for Windows OS.  
-EmoKill is based on [EmoCheck of JPCERT/CC](https://github.com/JPCERTCC/EmoCheck), thanks for it.
+EmoKill is an Emotet process detection and killing tool for Windows OS.  
+It avoids wasting time after detection of Emotet. Any process that matches the pattern of Emotet based on the logic of [EmoCheck by JPCERT/CC](https://github.com/JPCERTCC/EmoCheck) will be detected by EmoKill and killed as soon as possible.
+
+[![GitHub release](https://img.shields.io/github/release/ZiMADE/EmoKill.svg)](https://github.com/ZiMADE/EmoKill/releases)
+[![Github All Releases](https://img.shields.io/github/downloads/ZiMADE/EmoKill/total.svg)](http://www.somsubhra.com/github-release-stats/?username=ZiMADE&repository=EmoKill)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 ## How to use
 
@@ -40,7 +44,7 @@ The package of EmoKill consists of 3 program files:
 #### EmoKillTest.exe
 - To see EmoKill in action without having an Emotet infection, this exe will be helpfull.
 
-When EmoKill starts, there will be made a check of all running processes on your machine. After that every new started process will also be checked by EmoKill. Each process which match the pattern of Emotet based on the logic from [EmoCheck v0.0.2 of JPCERT/CC](https://github.com/JPCERTCC/EmoCheck) will be killed as soon as possible. The time between detection and successful killing such a process is normaly less than 1 second.
+When EmoKill starts, there will be made a check of all running processes on your machine. After that every new started process will also be checked by EmoKill. Any process that matches the pattern of Emotet based on the logic of [EmoCheck v0.0.2 by JPCERT/CC](https://github.com/JPCERTCC/EmoCheck) will be detected by EmoKill and killed as soon as possible. The time between detection and successful killing such a process is normaly less than 1 second.
 
 Detection and killing of Emotet processes are logged to a logfile `%windir%\Temp\EmoKill.log` and also to the application eventlog.
 
@@ -95,11 +99,10 @@ Why should you trust EmoKill?
 
 (v1.0.7348.26967)  
 
-Detection of Emotet is a port of the C++ code from [EmoCheck v0.0.2 of JPCERT/CC](https://github.com/JPCERTCC/EmoCheck), thanks for it.
+Detection of Emotet is also part of EmoKill and is based on the C++ code of [EmoCheck v0.0.2 by JPCERT/CC](https://github.com/JPCERTCC/EmoCheck), thanks for it.
 
 ## Screenshot
 
-(v1.0.7348.26967)  
 <div align="left"><img src="./img/EmoKillConsole.png"></div><br>
 <div align="left"><img src="./img/EmoKillTest.png"></div>
 
