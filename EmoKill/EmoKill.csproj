@@ -33,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -51,6 +52,7 @@
     <Compile Include="Properties\SharedAssemblyInfo.cs" />
     <Compile Include="src\EmoCheck.cs" />
     <Compile Include="src\Logger.cs" />
+    <Compile Include="src\NativeMethods.cs" />
     <Compile Include="src\ProcessInfo.cs" />
     <Compile Include="src\ProcessWatcher.cs" />
     <Compile Include="src\Program.cs" />

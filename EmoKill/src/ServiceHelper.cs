@@ -36,7 +36,28 @@ namespace ZiMADE.EmoKill
 
         public static string InstallService()
         {
-            return InstallService(string.Empty);
+            var result = string.Empty;
+            var serviceState = GetServiceState();
+            var serviceAlreadyInstalled = serviceState != null;
+            if (serviceAlreadyInstalled && serviceState != ServiceControllerStatus.Stopped && serviceState != ServiceControllerStatus.StopPending)
+            {
+                StopService();
+            }
+            CopyFilesToProgramPath();
+            if (serviceAlreadyInstalled)
+            {
+                StartService();
+            }
+            else
+            {
+                result = InstallService(string.Empty);
+            }
+            serviceState = GetServiceState();
+            if (serviceState == null)
+                result += $"Service State: UNKNOWN";
+            else
+                result += $"Service State: {serviceState}";
+            return result;
         }
 
         public static string UninstallService()
@@ -61,10 +82,6 @@ namespace ZiMADE.EmoKill
             }
             if (!string.IsNullOrEmpty(installUtil))
             {
-                if (string.IsNullOrEmpty(cmd))
-                {
-                    CopyFilesToProgramPath();
-                }
                 var serviceFile = Path.Combine(_InstallationPath, $"{Settings.ServiceName}.exe");
                 if (File.Exists(serviceFile))
                 {

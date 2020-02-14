@@ -122,17 +122,6 @@ namespace ZiMADE.EmoKill
             return keyword;
         }
 
-        [DllImport("kernel32.dll")]
-        private static extern long GetVolumeInformation(
-                                            string PathName,
-                                            StringBuilder VolumeNameBuffer,
-                                            UInt32 VolumeNameSize,
-                                            ref UInt32 VolumeSerialNumber,
-                                            ref UInt32 MaximumComponentLength,
-                                            ref UInt32 FileSystemFlags,
-                                            StringBuilder FileSystemNameBuffer,
-                                            UInt32 FileSystemNameSize);
-
         private uint GetVolumeSerialNumber()
         {
             string drive_letter = "C:\\";
@@ -142,7 +131,7 @@ namespace ZiMADE.EmoKill
             UInt32 file_system_flags = new UInt32();
             StringBuilder sb_file_system_name = new StringBuilder(256);
 
-            if (GetVolumeInformation(
+            if (NativeMethods.GetVolumeInformation(
                     drive_letter,
                     sb_volume_name,
                     (UInt32)sb_volume_name.Capacity,
