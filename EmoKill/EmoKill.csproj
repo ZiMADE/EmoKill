@@ -24,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,8 +35,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
@@ -50,10 +55,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\SharedAssemblyInfo.cs" />
+    <Compile Include="src\Crypto.cs" />
+    <Compile Include="src\Entity\AbstractInfo.cs" />
     <Compile Include="src\EmoCheck.cs" />
+    <Compile Include="src\Entity\SystemInfo.cs" />
     <Compile Include="src\Logger.cs" />
     <Compile Include="src\NativeMethods.cs" />
-    <Compile Include="src\ProcessInfo.cs" />
+    <Compile Include="src\Entity\CheckInfo.cs" />
+    <Compile Include="src\Entity\ProcessInfo.cs" />
     <Compile Include="src\ProcessWatcher.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -74,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="src\WinInstaller.resx">

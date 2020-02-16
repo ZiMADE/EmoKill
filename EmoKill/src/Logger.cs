@@ -37,7 +37,8 @@ namespace ZiMADE.EmoKill
         public Logger()
         {
             Level = LogLevel.INFO;
-            LogFileName = Path.Combine(Settings.WindowsFolder, "Temp", string.Concat(Settings.ProductName, ".log"));
+            //LogFileName = Path.Combine(Settings.WindowsFolder, "Temp", string.Concat(Settings.ProductName, ".log"));
+            LogFileName = Path.Combine(Settings.DataFolder, string.Concat(Settings.ComputerName, "_Log.txt"));
             EventLogName = "Application";
             if (!string.IsNullOrEmpty(LogFileName))
                 Info($">>>>> Log to file '{LogFileName}' startet");
@@ -211,9 +212,9 @@ namespace ZiMADE.EmoKill
                     }
                     File.AppendAllText(LogFileName, logLines.ToString(), Encoding.Default);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    throw ex;
+                    throw;
                 }
                 finally
                 {

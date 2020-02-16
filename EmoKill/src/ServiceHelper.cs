@@ -17,8 +17,6 @@ namespace ZiMADE.EmoKill
 {
     public static class ServiceHelper
     {
-        private static string _InstallationPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Settings.ProductName);
-
         public static ServiceControllerStatus? GetServiceState()
         {
             ServiceControllerStatus? retval = null;
@@ -39,11 +37,17 @@ namespace ZiMADE.EmoKill
             var result = string.Empty;
             var serviceState = GetServiceState();
             var serviceAlreadyInstalled = serviceState != null;
-            if (serviceAlreadyInstalled && serviceState != ServiceControllerStatus.Stopped && serviceState != ServiceControllerStatus.StopPending)
+            if (serviceAlreadyInstalled && Settings.Is64BitOperatingSystem && Settings.Is64BitProcess && Directory.Exists(Settings.InstallX86Folder))
+            {
+                UninstallService();
+                RemoveX86Files();
+                serviceAlreadyInstalled = false;
+            }
+            else if (serviceAlreadyInstalled && serviceState != ServiceControllerStatus.Stopped && serviceState != ServiceControllerStatus.StopPending)
             {
                 StopService();
             }
-            CopyFilesToProgramPath();
+            CopyFilesToInstallFolder();
             if (serviceAlreadyInstalled)
             {
                 StartService();
@@ -82,7 +86,7 @@ namespace ZiMADE.EmoKill
             }
             if (!string.IsNullOrEmpty(installUtil))
             {
-                var serviceFile = Path.Combine(_InstallationPath, $"{Settings.ServiceName}.exe");
+                var serviceFile = Path.Combine(Settings.InstallFolder, $"{Settings.ServiceName}.exe");
                 if (File.Exists(serviceFile))
                 {
                     retval = StartProgam(installUtil, $"\"{serviceFile}\" {cmd}");
@@ -195,7 +199,7 @@ namespace ZiMADE.EmoKill
             });
         }
 
-        static public void ShowEmoKillLogfile()
+        public static void ShowEmoKillLogfile()
         {
             try
             {
@@ -218,7 +222,7 @@ namespace ZiMADE.EmoKill
             }
         }
 
-        static public void DeleteEmoKillLogfile()
+        public static void DeleteEmoKillLogfile()
         {
             try
             {
@@ -238,6 +242,31 @@ namespace ZiMADE.EmoKill
             }
         }
 
+        public static string GetSystemInfo()
+        {
+            var retval = string.Empty;
+            try
+            {
+                var sysInfo = new Entity.SystemInfo();
+                sysInfo.SaveToJsonFile();
+                var lines = sysInfo.ToJson().Replace("{", "").Replace("}", "").Replace(",", "").Replace("\"", "").Replace("\\\\", "\\").Replace("\r", "").Split('\n');
+                var sb = new StringBuilder();
+                foreach (var line in lines)
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        sb.AppendLine(line);
+                    }
+                }
+                retval = sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                Settings.Log?.Error(ex);
+            }
+            return retval.ToString();
+        }
+
         private static bool ThisIsTheServiceProcess()
         {
             var currentProcessId = Process.GetCurrentProcess().Id;
@@ -252,15 +281,15 @@ namespace ZiMADE.EmoKill
             return false;
         }
 
-        private static void CopyFilesToProgramPath()
+        private static void CopyFilesToInstallFolder()
         {
             try
             {
                 var currentPath = AppDomain.CurrentDomain.BaseDirectory;
-                var filesToCopy = Directory.GetFiles(currentPath, "*.exe");
+                var filesToCopy = Directory.GetFiles(currentPath);
                 foreach (var srcFile in filesToCopy)
                 {
-                    var dstFile = Path.Combine(_InstallationPath, Path.GetFileName(srcFile));
+                    var dstFile = Path.Combine(Settings.InstallFolder, Path.GetFileName(srcFile));
                     Settings.Log?.Info($"Copy file '{srcFile}' to '{dstFile}'");
                     if (!Directory.Exists(Path.GetDirectoryName(dstFile)))
                     {
@@ -269,6 +298,27 @@ namespace ZiMADE.EmoKill
                     File.Copy(srcFile, dstFile, true);
                 }
 
+            }
+            catch (Exception ex)
+            {
+                Settings.Log?.Error(ex);
+            }
+        }
+
+        private static void RemoveX86Files()
+        {
+            try
+            {
+                if (Directory.Exists(Settings.InstallX86Folder))
+                {
+                    var filesToRemove = Directory.GetFiles(Settings.InstallX86Folder);
+                    foreach (var srcFile in filesToRemove)
+                    {
+                        Settings.Log?.Info($"Delete file '{srcFile}'");
+                        File.Delete(srcFile);
+                    }
+                    Directory.Delete(Settings.InstallX86Folder);
+                }
             }
             catch (Exception ex)
             {

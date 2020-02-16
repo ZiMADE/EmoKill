@@ -6,12 +6,17 @@
  *      Please refer to the LICENSE.txt of https://github.com/ZiMADE/EmoKill/
  */
 
+using Newtonsoft.Json;
 using System;
 
-namespace ZiMADE.EmoKill
+namespace ZiMADE.EmoKill.Entity
 {
-    public class ProcessInfo
+    public class ProcessInfo : AbstractInfo
     {
+        public override string EntityName => "EmoKill";
+        [JsonIgnore]
+        public override string SourceName => string.Empty;
+        public override string UID => ID.ToString().ToLower();
         public int ProcessId { get; private set; }
         public string ProcessName { get; private set; }
         public string FileName { get; private set; }
@@ -21,12 +26,17 @@ namespace ZiMADE.EmoKill
         public int EventId { get; set; }
         public string Message { get; set; }
 
-        public long DetectionPeriod => (long)(DetectedTime- StartTime).TotalMilliseconds;
+        [JsonIgnore]
+        public long DetectionPeriod => (long)(DetectedTime - StartTime).TotalMilliseconds;
+        [JsonIgnore]
         public long KillingPeriod => (long)(KilledTime - DetectedTime).TotalMilliseconds;
 
-        public ProcessInfo(int id, string processName, string fileName, DateTime started)
+        private Guid ID { get; set; }
+
+        public ProcessInfo(int processId, string processName, string fileName, DateTime started)
         {
-            ProcessId = id;
+            ID = Guid.NewGuid();
+            ProcessId = processId;
             ProcessName = processName;
             FileName = fileName;
             StartTime = started;

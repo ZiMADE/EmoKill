@@ -12,17 +12,22 @@ using System.Text;
 
 namespace ZiMADE.EmoKill
 {
-    public static class NativeMethods
+    internal static class NativeMethods
     {
-        [DllImport("kernel32.dll")]
-        public static extern long GetVolumeInformation(
-                                    string PathName,
-                                    StringBuilder VolumeNameBuffer,
-                                    UInt32 VolumeNameSize,
-                                    ref UInt32 VolumeSerialNumber,
-                                    ref UInt32 MaximumComponentLength,
-                                    ref UInt32 FileSystemFlags,
-                                    StringBuilder FileSystemNameBuffer,
-                                    UInt32 FileSystemNameSize);
+        [DllImport("Kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal extern static bool GetVolumeInformation(
+            string rootPathName,
+            StringBuilder volumeNameBuffer,
+            int volumeNameSize,
+            out uint volumeSerialNumber,
+            out uint maximumComponentLength,
+            out uint fileSystemFlags,
+            StringBuilder fileSystemNameBuffer,
+            int nFileSystemNameSize);
+
+        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
     }
 }

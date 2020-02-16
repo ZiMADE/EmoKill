@@ -34,7 +34,7 @@ namespace ZiMADE.EmoKill
             try
             {
                 AppDomain.CurrentDomain.UnhandledException += AppDomainUnhandledExceptionHandler;
-                Settings.InitalizeLogger();
+                Settings.Initalize();
                 _ProcessWatcher = new ProcessWatcher();
             }
             catch (Exception ex)
@@ -64,7 +64,7 @@ namespace ZiMADE.EmoKill
             }
             else if (args.ExceptionObject is Exception)
             {
-                Exception ex = (Exception)args.ExceptionObject;
+                Exception ex = args.ExceptionObject as Exception;
                 Settings.Log?.Fatal(ex);
                 Settings.Log?.Fatal(string.Format("AppDomainUnhandledException: Runtime terminating = {0}, TargetSite = {1}", args.IsTerminating, ex.TargetSite));
             }

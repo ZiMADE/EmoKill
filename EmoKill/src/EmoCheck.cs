@@ -15,7 +15,6 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -24,6 +23,8 @@ namespace ZiMADE.EmoKill
     public class EmoCheck
     {
         private uint _SerialNo { get; set; }
+        private string _SerialNoX => _SerialNo.ToString("x");
+
         private string _Keywords => string.Concat(
                 "duck,mfidl,targets,ptr,khmer,purge,metrics,acc,inet,msra,symbol,driver,",
                 "sidebar,restore,msg,volume,cards,shext,query,roam,etw,mexico,basic,url,",
@@ -31,19 +32,59 @@ namespace ZiMADE.EmoKill
                 "vmd,ctl,bta,shlp,avi,exce,dbt,pfx,rtp,edge,mult,clr,wmistr,ellipse,vol,",
                 "cyan,ses,guid,wce,wmp,dvb,elem,channel,space,digital,pdeft,violet,thunk");
 
-        public Regex EmoProcessNames1 { get; private set; }
-        public Regex EmoProcessNames2 { get; private set; }
+        public Dictionary<string, Entity.CheckInfo> EmoProcessNameDictionary { get; set; }
+
+        private const string testProcessName = "EmoKillTest";
 
         public EmoCheck()
         {
             _SerialNo = GetVolumeSerialNumber();
-            EmoProcessNames1 = GenerateEmotetProcessNames();
-            EmoProcessNames2 = GetEmotetFileNameFromRegistry(_SerialNo);
+            EmoProcessNameDictionary = new Dictionary<string, Entity.CheckInfo>();
+            GenerateEmotetProcessNames();
+            GetEmotetFileNameFromRegistry();
+            AddEmoProcessNameIfNotExistInList(testProcessName, Entity.CheckInfoSource.Test);
         }
 
-        private Regex GenerateEmotetProcessNames()
+        public bool EmoProcessNameMatches(string processName)
         {
-            var emoProcessNames = string.Empty;
+            var retval = false;
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (var entry in EmoProcessNameDictionary)
+                {
+                    sb.Append(string.Concat("|", Regex.Escape(entry.Value.EmotetProcessName)));
+                }
+                if (sb.Length > 0)
+                {
+                    var regex = new Regex(string.Concat("(", sb.ToString().Substring(1), ")"), RegexOptions.IgnoreCase);
+                    if (regex?.Match(processName)?.Success == true)
+                    {
+                        retval = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Settings.Log.Fatal($"{nameof(EmoProcessNameMatches)}(processName={processName})", ex);
+            }
+            return retval;
+        }
+
+        private void AddEmoProcessNameIfNotExistInList(string processName, Entity.CheckInfoSource source, string location = "")
+        {
+            if (!string.IsNullOrEmpty(processName))
+            {
+                var checkInfo = new Entity.CheckInfo(_SerialNo, processName, source, location);
+                if (!EmoProcessNameDictionary.ContainsKey(checkInfo.UID))
+                {
+                    EmoProcessNameDictionary.Add(checkInfo.UID, checkInfo);
+                }
+            }
+        }
+
+        private void GenerateEmotetProcessNames()
+        {
             if (_SerialNo == 0)
             {
                 // it was not possible to get serialno of sysvolume
@@ -53,7 +94,7 @@ namespace ZiMADE.EmoKill
                 {
                     foreach (var keyword2 in keywordArray)
                     {
-                        emoProcessNames = string.Concat(emoProcessNames, "|", keyword1, keyword2);
+                        AddEmoProcessNameIfNotExistInList(string.Concat(keyword1, keyword2), Entity.CheckInfoSource.Keywords);
                     }
                 }
                 Settings.Log.Warn("Error getting serialno of volume, so all possible processnames of Emotet will be returned");
@@ -78,13 +119,9 @@ namespace ZiMADE.EmoKill
                 mod = Convert.ToInt32(seed % Convert.ToUInt32(keylen));
                 emoProcessName += GetWord(_Keywords, mod, keylen);
 
-                emoProcessNames = string.Concat(emoProcessNames, "|", emoProcessName);
+                AddEmoProcessNameIfNotExistInList(emoProcessName, Entity.CheckInfoSource.Keywords);
                 Settings.Log.Debug($"Emotet ProcessName for VolumeSerialNo {_SerialNo} is: {emoProcessName}");
             }
-            emoProcessNames = string.Concat(emoProcessNames, "|", "EmoKillTest");
-            emoProcessNames = string.Concat("(", emoProcessNames.Substring(1), ")");
-            var regex = new Regex(emoProcessNames, RegexOptions.IgnoreCase);
-            return regex;
         }
 
         private string GetWord(string keywords, int ptr, int keylen)
@@ -125,21 +162,18 @@ namespace ZiMADE.EmoKill
         private uint GetVolumeSerialNumber()
         {
             string drive_letter = "C:\\";
-            uint serial_number = 0;
-            uint max_component_length = 0;
             StringBuilder sb_volume_name = new StringBuilder(256);
-            UInt32 file_system_flags = new UInt32();
             StringBuilder sb_file_system_name = new StringBuilder(256);
 
-            if (NativeMethods.GetVolumeInformation(
+            if (!NativeMethods.GetVolumeInformation(
                     drive_letter,
                     sb_volume_name,
-                    (UInt32)sb_volume_name.Capacity,
-                    ref serial_number,
-                    ref max_component_length,
-                    ref file_system_flags,
+                    sb_volume_name.Capacity,
+                    out uint serial_number,
+                    out uint max_component_length,
+                    out uint file_system_flags,
                     sb_file_system_name,
-                    (UInt32)sb_file_system_name.Capacity) == 0)
+                    sb_file_system_name.Capacity) == true)
             {
                 return 0;
             }
@@ -149,55 +183,37 @@ namespace ZiMADE.EmoKill
             }
         }
 
-        private Regex GetEmotetFileNameFromRegistry(uint serial)
+        private void GetEmotetFileNameFromRegistry()
         {
-            List<string> filenames = new List<string>();
             string filename;
             string reg_key_path = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer";
             string reg_key_path_admin = "Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Explorer";
 
             // if emotet runs with user auth.(x64,x32)
-            filename = QueryRegistry(serial, Registry.CurrentUser, reg_key_path);
-            if (filename.Length > 0 && !filenames.Contains(filename))
-            {
-                filenames.Add(filename);
-            }
+            CheckUsersRegistry(reg_key_path);
 
             // if emotet runs with admin auth. (x32)
-            filename = QueryRegistry(serial, Registry.LocalMachine, reg_key_path);
-            if (filename.Length > 0 && !filenames.Contains(filename))
-            {
-                filenames.Add(filename);
-            }
+            filename = QueryRegistry(Registry.LocalMachine, reg_key_path);
+            AddEmoProcessNameIfNotExistInList(filename, Entity.CheckInfoSource.Registry, $"HKEY_LOCAL_MACHINE\\{reg_key_path}:{_SerialNoX}");
 
             // if emotet runs with admin auth. (x64)
-            filename = QueryRegistry(serial, Registry.LocalMachine, reg_key_path_admin);
-            if (filename.Length > 0 && !filenames.Contains(filename))
-            {
-                filenames.Add(filename);
-            }
-
-            if (filenames.Count == 0)
-            {
-                return null;
-            }
-
-            var emoProcessNames = string.Empty;
-            foreach (var entry in filenames)
-            {
-                emoProcessNames = string.Concat(emoProcessNames, "|", entry);
-            }
-            emoProcessNames = string.Concat("(", emoProcessNames.Substring(1), ")");
-            var regex = new Regex(emoProcessNames, RegexOptions.IgnoreCase);
-            return regex;
+            filename = QueryRegistry(Registry.LocalMachine, reg_key_path_admin);
+            AddEmoProcessNameIfNotExistInList(filename, Entity.CheckInfoSource.Registry, $"HKEY_LOCAL_MACHINE\\{reg_key_path_admin}:{_SerialNoX}");
         }
 
-        private string QueryRegistry(uint serial, RegistryKey root, string key_path)
+        private void CheckUsersRegistry(string key_path)
+        {
+            String[] subkeys = Registry.Users.GetSubKeyNames();
+            foreach (var subkey in subkeys)
+            {
+                var filename = QueryRegistry(Registry.Users, $"{subkey}\\{key_path}");
+                AddEmoProcessNameIfNotExistInList(filename, Entity.CheckInfoSource.Registry, $"HKEY_USERS\\{subkey}\\{key_path}:{_SerialNoX}");
+            }
+        }
+
+        private string QueryRegistry(RegistryKey root, string key_path)
         {
             string filename = string.Empty;
-
-            // convert integer to wstring stream
-            string wstring_serial = ((int)serial).ToString("x");
 
             using (var key = root.OpenSubKey(key_path, false))
             {
@@ -207,17 +223,17 @@ namespace ZiMADE.EmoKill
                     return filename;
                 }
 
-                byte[] buffer = (byte[])key.GetValue(wstring_serial, null);
+                byte[] buffer = (byte[])key.GetValue(_SerialNoX, null);
                 if (buffer == null)
                 {
                     // Value does not exist
                     return filename;
                 }
 
-                Settings.Log?.Debug($"Found suspicous subkey: {wstring_serial}");
+                Settings.Log?.Debug($"Found suspicous subkey: {_SerialNoX}");
 
                 // XOR registry value with drive serial num;
-                var xor_key = BitConverter.GetBytes(serial);
+                var xor_key = BitConverter.GetBytes(_SerialNo);
 
                 var decoded_chars = new byte[buffer.Length];
                 for (uint i = 0; i < buffer.Length; i++)

@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management;
 using System.Text;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace ZiMADE.EmoKill
 {
-    public class ProcessWatcher
+    public class ProcessWatcher : IDisposable
     {
         private ManagementEventWatcher _ProcessStartEvent;
         public bool IsRunning { get; private set; }
@@ -108,12 +109,11 @@ namespace ZiMADE.EmoKill
             {
                 try
                 {
-                    var pi = new ProcessInfo(process.Id, process.ProcessName, process.MainModule?.FileName, process.StartTime);
+                    var pi = new Entity.ProcessInfo(process.Id, process.ProcessName, process.MainModule?.FileName, process.StartTime);
                     try
                     {
                         var emoCheck = new EmoCheck();
-                        if (emoCheck.EmoProcessNames1.Match(pi.ProcessName)?.Success == true ||
-                            emoCheck.EmoProcessNames2?.Match(pi.ProcessName)?.Success == true)
+                        if (emoCheck.EmoProcessNameMatches(pi.ProcessName))
                         {
                             try
                             {
@@ -133,6 +133,7 @@ namespace ZiMADE.EmoKill
                             }
                             finally
                             {
+                                pi.SaveToJsonFile(); 
                                 var msg = new StringBuilder();
                                 msg.AppendLine(pi.Message);
                                 msg.AppendLine($"ProcessId:\t{pi.ProcessId}");
@@ -148,6 +149,7 @@ namespace ZiMADE.EmoKill
                         {
                             Settings.Log?.Debug($"CLEAN:\t{pi.ProcessId }\t{pi.ProcessName}\t{pi.FileName}");
                         }
+                        SaveToJsonFile(emoCheck.EmoProcessNameDictionary);
                     }
                     catch (Exception ex)
                     {
@@ -161,6 +163,42 @@ namespace ZiMADE.EmoKill
                     Settings.Log?.Debug(ex);
                 }
             });
+        }
+
+        private void SaveToJsonFile(Dictionary<string, Entity.CheckInfo> emoProcessNameDict)
+        {
+            try
+            {
+                foreach (var entry in emoProcessNameDict)
+                {
+                    entry.Value.SaveToJsonFile();
+                }
+            }
+            catch (Exception ex)
+            {
+                Settings.Log?.Error(ex);
+            }
+        }
+
+        // Dispose() calls Dispose(true)
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        // The bulk of the clean-up code is implemented in Dispose(bool)
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // free managed resources
+                if (_ProcessStartEvent != null)
+                {
+                    _ProcessStartEvent.Dispose();
+                    _ProcessStartEvent = null;
+                }
+            }
         }
     }
 }

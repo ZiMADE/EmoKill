@@ -4,6 +4,7 @@ EmoKill is an Emotet process detection and killing tool for Windows OS.
 It avoids wasting time after detection of Emotet. Any process that matches the pattern of Emotet based on the logic of [EmoCheck by JPCERT/CC](https://github.com/JPCERTCC/EmoCheck) will be detected by EmoKill and killed as soon as possible.
 
 [![GitHub release](https://img.shields.io/github/release/ZiMADE/EmoKill.svg)](https://github.com/ZiMADE/EmoKill/releases)
+[![Known Vulnerabilities](https://snyk.io/test/github/ZiMADE/EmoKill/badge.svg)](https://snyk.io/test/github/ZiMADE/EmoKill)
 [![Github All Releases](https://img.shields.io/github/downloads/ZiMADE/EmoKill/total.svg)](http://www.somsubhra.com/github-release-stats/?username=ZiMADE&repository=EmoKill)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
@@ -17,23 +18,6 @@ It avoids wasting time after detection of Emotet. Any process that matches the p
 
 Please download from the [Releases](https://github.com/ZiMADE/EmoKill/releases) page.
 
-Latest hash:  
-
-> EmoKill.exe  
->   MD5   : 07261DAA0D7673F7F65D422E3944224E  
->   SHA1  : 5F58AFD7A7EC9877576232ACFAEC058A46843878  
->   SHA256: 86B13205DF5AF154E99631C728CCD7C4B6846DE7737CE7B471FAAC3DD7C06E79  
-
-> EmoKillConsole.exe  
->   MD5   : E652FA0AB3782CCF58D595BAEB075B9F  
->   SHA1  : 9068315EBC395EBE676675716DB7259609AE281A  
->   SHA256: 72E4B52B8DCC62C393659B6B5909E357E7B9E2F6F512EA78B64DAB76776F42E2  
-
-> EmoKillTest.exe  
->   MD5   : EDFD65A922B324CB824C587EF5711638  
->   SHA1  : 3EC7D9D8027DAF825DC71F3B0471126AB13E0474  
->   SHA256: 7D28FB9FBF664390EB992F817E63D256F71C0ECC22D71C836F6B8D4B03D9CBF7  
-
 ## How EmoKill works
 
 The package of EmoKill consists of 3 program files: 
@@ -46,14 +30,25 @@ The package of EmoKill consists of 3 program files:
 
 When EmoKill starts, there will be made a check of all running processes on your machine. After that every new started process will also be checked by EmoKill. Any process that matches the pattern of Emotet based on the logic of [EmoCheck v0.0.2 by JPCERT/CC](https://github.com/JPCERTCC/EmoCheck) will be detected by EmoKill and killed as soon as possible. The time between detection and successful killing such a process is normaly less than 1 second.
 
-Detection and killing of Emotet processes are logged to a logfile `%windir%\Temp\EmoKill.log` and also to the application eventlog.
+Detection and killing of Emotet processes are logged to a logfile `%programdata%\EmoKill\{computername}_Log.txt` and also to the application eventlog.
+Additionally there will be created several json-files at folder `%programdata%\EmoKill`:
+- `{computername}_EmoCheck_Keywords_{uid}.json`
+  - Each file contains information about which process name is checked and killed (if detected). The source of the process name is the list of keywords. 
+- `{computername}_EmoCheck_Registry_{uid}.json`
+  - Each file contains information about which process name is checked and killed (if detected). The source of the process name is the registry. 
+- `{computername}_EmoCheck_Test_{uid}.json`
+  - Each file contains information about which process name is checked and killed (if detected). The source of the process name is the test scenario of EmoKill. 
+- `{computername}_EmoKill_{timestamp}.json`
+  - These files contains information about killed processes. 
+- `{computername}_SysInfo_{timestamp}.json`
+  - These files contain system information that may be helpful in troubleshooting.
 
-After a reboot of your machine the installed EmoKill service will start again automaticly.
+After a reboot of your computer, the installed EmoKill service will automatically restart.
 
 ## Installation
 
 1. Start `EmoKillConsole.exe` (run as amdinistrator is required)
-2. Select menuitem 1 (Install and start EmoKill as Service)
+2. Select menuitem 1 (Install/Upadate and start EmoKill as Service)
 
 Selecting the installation of the EmoKill as a windows service will do follwoing: 
 1. program files are copied to the program files folder on your systemdrive
@@ -93,13 +88,14 @@ Why should you trust EmoKill?
 - EmoKill runs only on the machine where it is installed!
 - EmoKill needs no network connection!
 - EmoKill needs no connection to the internet!
-- EmoKill contains no ads, no malware, ..., and no third party components!
+- EmoKill contains no ads, no malware, ..., and only well known third party components!
 
 ## How EmoKill detects Emotet
 
 (v1.0.7348.26967)  
 
-Detection of Emotet is also part of EmoKill and is based on the C++ code of [EmoCheck v0.0.2 by JPCERT/CC](https://github.com/JPCERTCC/EmoCheck), thanks for it.
+Detection of Emotet is also part of EmoKill and is based on the C++ code of [EmoCheck v0.0.2 by JPCERT/CC](https://github.com/JPCERTCC/EmoCheck).
+
 
 ## Screenshot
 
@@ -108,8 +104,16 @@ Detection of Emotet is also part of EmoKill and is based on the C++ code of [Emo
 
 ## Releases
 
-- (Feb. 13, 2020) v1.0.7348.26967
-  - Initial release
+Informations are available at the [Releases](https://github.com/ZiMADE/EmoKill/releases) page.
+
+## Credits & Third party components
+
+#### Very many credits go to JPCERT/CC for releasing [EmoCheck](https://github.com/JPCERTCC/EmoCheck) as open source.
+
+Current version of EmoKill uses just one well known third party component.
+#### Json.NET
+- It's a popular high-performance JSON framework for .NET.
+- Further informations may be found at the [official website](https://www.newtonsoft.com/json).
 
 ### Tested environments
 

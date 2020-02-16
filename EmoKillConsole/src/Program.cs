@@ -15,11 +15,11 @@ namespace ZiMADE.EmoKillConsole
     {
         static void Main(string[] args)
         {
-            EmoKill.Settings.InitalizeLogger();
+            EmoKill.Settings.Initalize();
             HandleUserInput();
         }
 
-        static private void HandleUserInput()
+        private static void HandleUserInput()
         {
             int userInput = 0;
             do
@@ -52,10 +52,10 @@ namespace ZiMADE.EmoKillConsole
                         ActivateEmoKillConsole();
                         break;
                 }
-            } while (userInput != 9);
+            } while (userInput != 0);
         }
 
-        static private int DisplayMenu()
+        private static int DisplayMenu()
         {
             ServiceControllerStatus? serviceState = EmoKill.ServiceHelper.GetServiceState();
             System.Console.WriteLine("_________________________________________");
@@ -79,7 +79,7 @@ namespace ZiMADE.EmoKillConsole
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
             System.Console.WriteLine("EmoKill-Console Menu");
-            System.Console.WriteLine(" 1. Install and start EmoKill as Service");
+            System.Console.WriteLine(" 1. Install/Update and start EmoKill as Service");
             System.Console.WriteLine(" 2. Uninstall EmoKill Service");
             System.Console.WriteLine(" 3. Start EmoKill Service");
             System.Console.WriteLine(" 4. Stop EmoKill Service");
@@ -87,15 +87,22 @@ namespace ZiMADE.EmoKillConsole
             System.Console.WriteLine(" 6. Show EmoKill Logfile");
             System.Console.WriteLine(" 7. Delete EmoKill Logfile");
             System.Console.WriteLine(" 8. Activate EmoKill in this Console");
-            System.Console.WriteLine(" 9. Exit");
+            System.Console.WriteLine(" 0. Exit");
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
             System.Console.Write("Please choose what you wish to do: ");
             var result = System.Console.ReadLine();
-            return Convert.ToInt32(result);
+            try
+            {
+                return Convert.ToInt32(result);
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
         }
 
-        static private void ActivateEmoKillConsole()
+        private static void ActivateEmoKillConsole()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -123,7 +130,7 @@ namespace ZiMADE.EmoKillConsole
             }
         }
 
-        static private void DeactivateEmoKillConsole()
+        private static void DeactivateEmoKillConsole()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -135,7 +142,7 @@ namespace ZiMADE.EmoKillConsole
             PressEnterToContinue();
         }
 
-        static private void InstallEmoKillService()
+        private static void InstallEmoKillService()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -149,7 +156,7 @@ namespace ZiMADE.EmoKillConsole
             PressEnterToContinue();
         }
 
-        static private void UninstallEmoKillService()
+        private static void UninstallEmoKillService()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -163,7 +170,7 @@ namespace ZiMADE.EmoKillConsole
             PressEnterToContinue();
         }
 
-        static private void StartEmoKillService()
+        private static void StartEmoKillService()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -172,14 +179,11 @@ namespace ZiMADE.EmoKillConsole
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
             ServiceControllerStatus? result = EmoKill.ServiceHelper.StartService();
-            if (result == null)
-                System.Console.WriteLine($"Service State: UNKNOWN");
-            else
-                System.Console.WriteLine($"Service State: {result}");
+            System.Console.WriteLine(string.Concat("Service State: ", (result == null) ? "UNKNOWN" : $"{result}"));
             PressEnterToContinue();
         }
 
-        static private void StopEmoKillService()
+        private static void StopEmoKillService()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -188,14 +192,11 @@ namespace ZiMADE.EmoKillConsole
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
             ServiceControllerStatus? result = EmoKill.ServiceHelper.StopService();
-            if (result == null)
-                System.Console.WriteLine($"Service State: UNKNOWN");
-            else
-                System.Console.WriteLine($"Service State: {result}");
+            System.Console.WriteLine(string.Concat("Service State: ", (result == null) ? "UNKNOWN" : $"{result}"));
             PressEnterToContinue();
         }
 
-        static private void GetEmoKillServiceStatus()
+        private static void GetEmoKillServiceStatus()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -203,15 +204,11 @@ namespace ZiMADE.EmoKillConsole
             System.Console.WriteLine("Getting EmoKill Service Status ...");
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
-            ServiceControllerStatus? result = EmoKill.ServiceHelper.GetServiceState();
-            if (result == null)
-                System.Console.WriteLine($"Service State: UNKNOWN");
-            else
-                System.Console.WriteLine($"Service State: {result}");
+            System.Console.WriteLine(EmoKill.ServiceHelper.GetSystemInfo());
             PressEnterToContinue();
         }
 
-        static private void ShowEmoKillLogfile()
+        private static void ShowEmoKillLogfile()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -223,7 +220,7 @@ namespace ZiMADE.EmoKillConsole
             PressEnterToContinue();
         }
 
-        static private void DeleteEmoKillLogfile()
+        private static void DeleteEmoKillLogfile()
         {
             System.Console.WriteLine();
             System.Console.WriteLine("_________________________________________");
@@ -235,7 +232,7 @@ namespace ZiMADE.EmoKillConsole
             PressEnterToContinue();
         }
 
-        static private void PressEnterToContinue()
+        private static void PressEnterToContinue()
         {
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
