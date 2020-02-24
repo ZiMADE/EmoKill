@@ -4,7 +4,6 @@ EmoKill is an Emotet process detection and killing tool for Windows OS.
 It avoids wasting time after detection of Emotet. Any process that matches the pattern of Emotet based on the logic of [EmoCheck by JPCERT/CC](https://github.com/JPCERTCC/EmoCheck) will be detected by EmoKill and killed as soon as possible.
 
 [![GitHub release](https://img.shields.io/github/release/ZiMADE/EmoKill.svg)](https://github.com/ZiMADE/EmoKill/releases)
-[![Known Vulnerabilities](https://snyk.io/test/github/ZiMADE/EmoKill/badge.svg)](https://snyk.io/test/github/ZiMADE/EmoKill)
 [![Github All Releases](https://img.shields.io/github/downloads/ZiMADE/EmoKill/total.svg)](http://www.somsubhra.com/github-release-stats/?username=ZiMADE&repository=EmoKill)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
