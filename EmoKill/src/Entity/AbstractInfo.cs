@@ -34,11 +34,11 @@ namespace ZiMADE.EmoKill.Entity
                 {
                     if (string.IsNullOrWhiteSpace(SourceName))
                     {
-                        return Path.Combine(Settings.DataFolder, $"{ComputerName}_{EntityName}_{Timestamp.ToString("yyyyMMdd-HHmmss")}.json");
+                        return Path.Combine(Settings.DataFolder, $"{ComputerName}_{EntityName}_{Timestamp.ToString("yyyyMMdd-HHmmss")}_{UID}.json");
                     }
                     else
                     {
-                        return Path.Combine(Settings.DataFolder, $"{ComputerName}_{EntityName}_{SourceName}_{Timestamp.ToString("yyyyMMdd-HHmmss")}.json");
+                        return Path.Combine(Settings.DataFolder, $"{ComputerName}_{EntityName}_{SourceName}_{Timestamp.ToString("yyyyMMdd-HHmmss")}_{UID}.json");
                     }
                 }
                 else
