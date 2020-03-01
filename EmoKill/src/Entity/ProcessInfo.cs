@@ -13,34 +13,34 @@ namespace ZiMADE.EmoKill.Entity
 {
     public class ProcessInfo : AbstractInfo
     {
-        public override string EntityName => "EmoKill";
+        public override string EntityName => (ProcessName?.Equals("EmoKillTest", StringComparison.InvariantCultureIgnoreCase) == true) ? $"{EntityType.TestKill}" : $"{EntityType.EmoKill}"; 
         [JsonIgnore]
         public override string SourceName => string.Empty;
         public override string UID => ID.ToString().ToLower();
+        public SystemInfo SystemInfo { get; private set; }
         public int ProcessId { get; private set; }
         public string ProcessName { get; private set; }
-        public string FileName { get; private set; }
+        public string ProcessUserName { get; set; }
+        public string ProcessFileName { get; private set; }
         public DateTime StartTime { get; private set; }
         public DateTime DetectedTime { get; private set; }
         public DateTime KilledTime { get; set; }
+        public long DetectionTimeMS => (long)(DetectedTime - StartTime).TotalMilliseconds;
+        public long KillingTimeMS => (long)(KilledTime - DetectedTime).TotalMilliseconds;
         public int EventId { get; set; }
         public string Message { get; set; }
-
-        [JsonIgnore]
-        public long DetectionPeriod => (long)(DetectedTime - StartTime).TotalMilliseconds;
-        [JsonIgnore]
-        public long KillingPeriod => (long)(KilledTime - DetectedTime).TotalMilliseconds;
-
         private Guid ID { get; set; }
 
-        public ProcessInfo(int processId, string processName, string fileName, DateTime started)
+        public ProcessInfo(int processId, string processName, string userName, string fileName, DateTime started)
         {
             ID = Guid.NewGuid();
             ProcessId = processId;
             ProcessName = processName;
-            FileName = fileName;
+            ProcessUserName = userName;
+            ProcessFileName = fileName;
             StartTime = started;
             DetectedTime = DateTime.Now;
+            SystemInfo = new SystemInfo(this);
         }
     }
 }

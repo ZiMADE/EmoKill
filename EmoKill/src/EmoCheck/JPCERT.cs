@@ -18,9 +18,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ZiMADE.EmoKill
+namespace ZiMADE.EmoKill.EmoCheck
 {
-    public class EmoCheck
+    public class JPCERT
     {
         private uint _SerialNo { get; set; }
         private string _SerialNoX => _SerialNo.ToString("x");
@@ -32,17 +32,20 @@ namespace ZiMADE.EmoKill
                 "vmd,ctl,bta,shlp,avi,exce,dbt,pfx,rtp,edge,mult,clr,wmistr,ellipse,vol,",
                 "cyan,ses,guid,wce,wmp,dvb,elem,channel,space,digital,pdeft,violet,thunk");
 
-        public Dictionary<string, Entity.CheckInfo> EmoProcessNameDictionary { get; set; }
+        internal Dictionary<string, Entity.CheckInfo> EmoProcessNameDictionary { get; set; }
 
-        private const string testProcessName = "EmoKillTest";
-
-        public EmoCheck()
+        public JPCERT()
         {
             _SerialNo = GetVolumeSerialNumber();
             EmoProcessNameDictionary = new Dictionary<string, Entity.CheckInfo>();
-            GenerateEmotetProcessNames();
-            GetEmotetFileNameFromRegistry();
-            AddEmoProcessNameIfNotExistInList(testProcessName, Entity.CheckInfoSource.Test);
+            if (Settings.Config.JPCERTCheckKeywords)
+            {
+                GenerateEmotetProcessNames();
+            }
+            if (Settings.Config.JPCERTCheckKeywords)
+            {
+                GetEmotetFileNameFromRegistry();
+            }
         }
 
         public bool EmoProcessNameMatches(string processName)
@@ -71,9 +74,9 @@ namespace ZiMADE.EmoKill
             return retval;
         }
 
-        private void AddEmoProcessNameIfNotExistInList(string processName, Entity.CheckInfoSource source, string location = "")
+        private void AddEmoProcessNameIfNotExistInList(string processName, CheckInfoSource source, string location = "")
         {
-            if (!string.IsNullOrEmpty(processName))
+            if (!string.IsNullOrWhiteSpace(processName))
             {
                 var checkInfo = new Entity.CheckInfo(_SerialNo, processName, source, location);
                 if (!EmoProcessNameDictionary.ContainsKey(checkInfo.UID))
@@ -94,7 +97,7 @@ namespace ZiMADE.EmoKill
                 {
                     foreach (var keyword2 in keywordArray)
                     {
-                        AddEmoProcessNameIfNotExistInList(string.Concat(keyword1, keyword2), Entity.CheckInfoSource.Keywords);
+                        AddEmoProcessNameIfNotExistInList(string.Concat(keyword1, keyword2), CheckInfoSource.Keywords);
                     }
                 }
                 Settings.Log.Warn("Error getting serialno of volume, so all possible processnames of Emotet will be returned");
@@ -119,7 +122,7 @@ namespace ZiMADE.EmoKill
                 mod = Convert.ToInt32(seed % Convert.ToUInt32(keylen));
                 emoProcessName += GetWord(_Keywords, mod, keylen);
 
-                AddEmoProcessNameIfNotExistInList(emoProcessName, Entity.CheckInfoSource.Keywords);
+                AddEmoProcessNameIfNotExistInList(emoProcessName, CheckInfoSource.Keywords);
                 Settings.Log.Debug($"Emotet ProcessName for VolumeSerialNo {_SerialNo} is: {emoProcessName}");
             }
         }
@@ -194,11 +197,11 @@ namespace ZiMADE.EmoKill
 
             // if emotet runs with admin auth. (x32)
             filename = QueryRegistry(Registry.LocalMachine, reg_key_path);
-            AddEmoProcessNameIfNotExistInList(filename, Entity.CheckInfoSource.Registry, $"HKEY_LOCAL_MACHINE\\{reg_key_path}:{_SerialNoX}");
+            AddEmoProcessNameIfNotExistInList(filename, CheckInfoSource.Registry, $"HKEY_LOCAL_MACHINE\\{reg_key_path}:{_SerialNoX}");
 
             // if emotet runs with admin auth. (x64)
             filename = QueryRegistry(Registry.LocalMachine, reg_key_path_admin);
-            AddEmoProcessNameIfNotExistInList(filename, Entity.CheckInfoSource.Registry, $"HKEY_LOCAL_MACHINE\\{reg_key_path_admin}:{_SerialNoX}");
+            AddEmoProcessNameIfNotExistInList(filename, CheckInfoSource.Registry, $"HKEY_LOCAL_MACHINE\\{reg_key_path_admin}:{_SerialNoX}");
         }
 
         private void CheckUsersRegistry(string key_path)
@@ -207,7 +210,7 @@ namespace ZiMADE.EmoKill
             foreach (var subkey in subkeys)
             {
                 var filename = QueryRegistry(Registry.Users, $"{subkey}\\{key_path}");
-                AddEmoProcessNameIfNotExistInList(filename, Entity.CheckInfoSource.Registry, $"HKEY_USERS\\{subkey}\\{key_path}:{_SerialNoX}");
+                AddEmoProcessNameIfNotExistInList(filename, CheckInfoSource.Registry, $"HKEY_USERS\\{subkey}\\{key_path}:{_SerialNoX}");
             }
         }
 

@@ -13,9 +13,11 @@ namespace ZiMADE.EmoKillConsole
 {
     class Program
     {
+        private static ServiceControllerStatus? _ServiceState;
+
         static void Main(string[] args)
         {
-            EmoKill.Settings.Initalize();
+            EmoKill.Settings.Initialize();
             HandleUserInput();
         }
 
@@ -31,13 +33,16 @@ namespace ZiMADE.EmoKillConsole
                         InstallEmoKillService();
                         break;
                     case 2:
-                        UninstallEmoKillService();
+                        if (_ServiceState != null)
+                            UninstallEmoKillService();
                         break;
                     case 3:
-                        StartEmoKillService();
+                        if (_ServiceState == ServiceControllerStatus.Stopped)
+                            StartEmoKillService();
                         break;
                     case 4:
-                        StopEmoKillService();
+                        if (_ServiceState == ServiceControllerStatus.Running)
+                            StopEmoKillService();
                         break;
                     case 5:
                         GetEmoKillServiceStatus();
@@ -49,7 +54,8 @@ namespace ZiMADE.EmoKillConsole
                         DeleteEmoKillLogfile();
                         break;
                     case 8:
-                        ActivateEmoKillConsole();
+                        if (_ServiceState == null || _ServiceState == ServiceControllerStatus.Stopped)
+                            ActivateEmoKillConsole();
                         break;
                 }
             } while (userInput != 0);
@@ -57,7 +63,7 @@ namespace ZiMADE.EmoKillConsole
 
         private static int DisplayMenu()
         {
-            ServiceControllerStatus? serviceState = EmoKill.ServiceHelper.GetServiceState();
+            _ServiceState = EmoKill.ServiceHelper.GetServiceState();
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine(@" ______                 _   __ _   _   _ ");
             System.Console.WriteLine(@"|  ____|               | | / /|_| | | | |");
@@ -70,23 +76,27 @@ namespace ZiMADE.EmoKillConsole
             System.Console.WriteLine("Emotet process killing tool by ZiMADE.");
             System.Console.WriteLine();
             System.Console.WriteLine($"Version:\t{EmoKill.Settings.ProductVersion}");
-            System.Console.WriteLine($"Release Date:\t{EmoKill.Settings.ProductDate}");
+            System.Console.WriteLine($"Release Date:\t{EmoKill.Settings.ProductDate.ToShortDateString()}");
             System.Console.WriteLine($"URL:\t\t{EmoKill.Settings.ProductRepository}");
-            if (serviceState == null)
+            if (_ServiceState == null)
                 System.Console.WriteLine($"Service State:\tUNKNOWN");
             else
-                System.Console.WriteLine($"Service State:\t{serviceState}");
+                System.Console.WriteLine($"Service State:\t{_ServiceState}");
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
             System.Console.WriteLine("EmoKill-Console Menu");
             System.Console.WriteLine(" 1. Install/Update and start EmoKill as Service");
-            System.Console.WriteLine(" 2. Uninstall EmoKill Service");
-            System.Console.WriteLine(" 3. Start EmoKill Service");
-            System.Console.WriteLine(" 4. Stop EmoKill Service");
+            if (_ServiceState != null)
+                System.Console.WriteLine(" 2. Uninstall EmoKill Service");
+            if (_ServiceState == ServiceControllerStatus.Stopped)
+                System.Console.WriteLine(" 3. Start EmoKill Service");
+            if (_ServiceState == ServiceControllerStatus.Running)
+                System.Console.WriteLine(" 4. Stop EmoKill Service");
             System.Console.WriteLine(" 5. Get status of EmoKill Service");
             System.Console.WriteLine(" 6. Show EmoKill Logfile");
             System.Console.WriteLine(" 7. Delete EmoKill Logfile");
-            System.Console.WriteLine(" 8. Activate EmoKill in this Console");
+            if (_ServiceState == null || _ServiceState == ServiceControllerStatus.Stopped)
+                System.Console.WriteLine(" 8. Activate EmoKill in this Console (just for testing)");
             System.Console.WriteLine(" 0. Exit");
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
@@ -109,17 +119,17 @@ namespace ZiMADE.EmoKillConsole
             System.Console.WriteLine();
             System.Console.WriteLine("Activate EmoKill in this Console ...");
             System.Console.WriteLine("_________________________________________");
-            EmoKill.Program.Start();
+            EmoKill.Runner.Start();
 
             System.Console.WriteLine("_________________________________________");
             System.Console.WriteLine();
-            if (EmoKill.Program.IsRunning)
+            if (EmoKill.Runner.IsRunning)
             {
                 System.Console.WriteLine("EmoKill activated.");
                 System.Console.WriteLine("Press <ENTER> to deactivate EmoKill");
                 System.Console.WriteLine("_________________________________________");
                 System.Console.ReadLine();
-                EmoKill.Program.Stop();
+                EmoKill.Runner.Stop();
                 System.Console.WriteLine("_________________________________________");
                 System.Console.WriteLine();
             }

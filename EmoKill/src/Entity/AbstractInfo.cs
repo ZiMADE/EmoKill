@@ -21,13 +21,39 @@ namespace ZiMADE.EmoKill.Entity
         public abstract string UID { get; }
         public string ComputerName { get; private set; }
         public DateTime Timestamp { get; private set; }
-        public string ApplicationVersion { get; private set; }
+        public string ProductVersion { get; private set; }
+
+        [JsonIgnore]
+        internal object ParentEntity { get; set; }
+
+        public string FileName
+        {
+            get
+            {
+                if (ParentEntity == null)
+                {
+                    if (string.IsNullOrWhiteSpace(SourceName))
+                    {
+                        return Path.Combine(Settings.DataFolder, $"{ComputerName}_{EntityName}_{Timestamp.ToString("yyyyMMdd-HHmmss")}.json");
+                    }
+                    else
+                    {
+                        return Path.Combine(Settings.DataFolder, $"{ComputerName}_{EntityName}_{SourceName}_{Timestamp.ToString("yyyyMMdd-HHmmss")}.json");
+                    }
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+        }
 
         public AbstractInfo()
         {
             ComputerName = Settings.ComputerName;
             Timestamp = DateTime.Now;
-            ApplicationVersion = Settings.ProductVersion;
+            ProductVersion = Settings.ProductVersion;
+            ParentEntity = null;
         }
 
         public string ToJson()
@@ -40,14 +66,24 @@ namespace ZiMADE.EmoKill.Entity
             return JsonConvert.SerializeObject(this, formatting);
         }
 
-        public string ToXML()
+        /// <summary>
+        /// Converts Class to a human readable info
+        /// </summary>
+        /// <returns>Ident formatted string without special characters</returns>
+        public string ToJsonString()
         {
-            using (var stringwriter = new System.IO.StringWriter())
+            var retval = string.Empty;
+            var lines = ToJson().Replace("{", "").Replace("}", "").Replace(",", "").Replace("\"", "").Replace("\\\\", "\\").Replace("\r", "").Split('\n');
+            var sb = new StringBuilder();
+            foreach (var line in lines)
             {
-                var serializer = new XmlSerializer(this.GetType());
-                serializer.Serialize(stringwriter, this);
-                return stringwriter.ToString();
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    sb.AppendLine(line);
+                }
             }
+            retval = sb.ToString();
+            return retval;
         }
 
         public override string ToString()
@@ -63,20 +99,15 @@ namespace ZiMADE.EmoKill.Entity
                 {
                     Directory.CreateDirectory(Settings.DataFolder);
                 }
-                var filename = string.Empty;
-                if (string.IsNullOrEmpty(SourceName))
-                {
-                    filename = Path.Combine(Settings.DataFolder, $"{ComputerName}_{EntityName}_{Timestamp.ToString("yyyyMMdd-HHmmss")}.json");
-                }
-                else
-                {
-                    filename = Path.Combine(Settings.DataFolder, $"{ComputerName}_{EntityName}_{SourceName}_{UID}.json");
-                }
-                if (!File.Exists(filename))
+                if (!File.Exists(FileName))
                 {
                     try
                     {
-                        File.WriteAllText(filename, ToJson(Formatting.Indented), Encoding.Default);
+                        File.WriteAllText(FileName, ToJson(Formatting.Indented), Encoding.Default);
+                        if (!string.IsNullOrWhiteSpace(Settings.Config.SharedDataFolder))
+                        {
+                            InfoDispatcher.SendInformationToShare();
+                        }
                     }
                     catch (IOException)
                     {

@@ -9,6 +9,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Principal;
 
@@ -16,38 +19,70 @@ namespace ZiMADE.EmoKill
 {
     public static class Settings
     {
-        public static string ProductName => ((AssemblyProductAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyProductAttribute), false))?.Product;
-        public static string ProductVersion => Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        public static string ProductDate => ((AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyInformationalVersionAttribute), false))?.InformationalVersion;
-        public static string ProductRepository => ((AssemblyConfigurationAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyConfigurationAttribute), false))?.Configuration;
-        public static string ServiceName => Assembly.GetExecutingAssembly().GetName().Name;
-        public static string ServiceDescription => ((AssemblyDescriptionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyDescriptionAttribute), false)).Description;
-        public static string EntryAssembly => Assembly.GetEntryAssembly().GetName().FullName;
-        public static string ExecutingAssembly => Assembly.GetExecutingAssembly().GetName().FullName;
-        public static string ExecutingFolder => AppDomain.CurrentDomain.BaseDirectory;
-        public static string WindowsFolder => Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.System)).FullName;
-        public static string InstallFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), ProductName);
-        public static string InstallX86Folder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), ProductName);
-        public static string DataFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), ProductName);
-        public static string ComputerName => System.Environment.MachineName;
-        public static OperatingSystem OSVersion => System.Environment.OSVersion;
-        public static bool Is64BitOperatingSystem => System.Environment.Is64BitOperatingSystem;
-        public static bool Is64BitProcess => System.Environment.Is64BitProcess;
+        public static string ProductName { get; private set; }
+        public static string ProductVersion { get; private set; }
+        public static DateTime ProductDate { get; private set; }
+        public static string ProductRepository { get; private set; }
+        public static bool IsAdministrator { get; private set; }
 
+        internal static Logger Log { get; private set; }
+        internal static Config Config { get; private set; }
+        internal static string AssemblyVersion { get; private set; }
+        internal static string ServiceName { get; private set; }
+        internal static string ServiceDescription { get; private set; }
+        internal static string EntryAssembly { get; private set; }
+        internal static string ExecutingAssembly { get; private set; }
+        internal static string ExecutingFolder { get; private set; }
+        internal static string WindowsFolder { get; private set; }
+        internal static string InstallFolder { get; private set; }
+        internal static string InstallX86Folder { get; private set; }
+        internal static string DataFolder { get; private set; }
+        internal static string ComputerName { get; private set; }
+        internal static OperatingSystem OSVersion { get; private set; }
+        internal static bool Is64BitOperatingSystem { get; private set; }
+        internal static bool Is64BitProcess { get; private set; }
+        internal static int CurrentProcessId { get; private set; }
+        internal static string IPAddress { get; private set; }
 
-        public static Logger Log { get; private set; }
-
-        public static void Initalize()
+        public static void Initialize()
         {
-            Log = new Logger();
-            new Entity.SystemInfo().SaveToJsonFile();
-            if (Is64BitOperatingSystem && !Is64BitProcess)
+            if (Log == null)
             {
-                Log.Warn($"At this system the 64bit executable of {ProductName} should be used, otherwise its just possible to detect and kill only 32bit processes of Emotet !!!");
+                ProductName = ((AssemblyProductAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyProductAttribute), false))?.Product;
+                ProductVersion = ((AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyInformationalVersionAttribute), false))?.InformationalVersion;
+                ProductDate = GetBuildDateTime();
+                ProductRepository = ((AssemblyConfigurationAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyConfigurationAttribute), false))?.Configuration;
+                AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                ServiceName = Assembly.GetExecutingAssembly().GetName().Name;
+                ServiceDescription = ((AssemblyDescriptionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyDescriptionAttribute), false)).Description;
+                EntryAssembly = Assembly.GetEntryAssembly().GetName().FullName;
+                ExecutingAssembly = Assembly.GetExecutingAssembly().GetName().FullName;
+                ExecutingFolder = AppDomain.CurrentDomain.BaseDirectory;
+                WindowsFolder = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.System)).FullName;
+                InstallFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), ProductName);
+                InstallX86Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), ProductName);
+                DataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), ProductName);
+                ComputerName = System.Environment.MachineName;
+                OSVersion = System.Environment.OSVersion;
+                Is64BitOperatingSystem = System.Environment.Is64BitOperatingSystem;
+                Is64BitProcess = System.Environment.Is64BitProcess;
+                CurrentProcessId = Process.GetCurrentProcess().Id;
+
+                Log = new Logger();
+                Config = new Config();
+                IsAdministrator = IsAdmin();
+                IPAddress = LocalIPAddress();
+
+                new Entity.SystemInfo().SaveToJsonFile();
+
+                if (Is64BitOperatingSystem && !Is64BitProcess)
+                {
+                    Log.Warn($"At this system the 64bit executable of {ProductName} should be used, otherwise its just possible to detect and kill only 32bit processes of Emotet !!!");
+                }
             }
         }
 
-        public static bool IsAdministrator()
+        private static bool IsAdmin()
         {
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
@@ -56,15 +91,41 @@ namespace ZiMADE.EmoKill
             }
         }
 
-        private static bool IsWin64Emulator(this Process process)
+        /// <summary>
+        /// This method will give the local address that would be used to connect to the specified remote host.
+        /// There is no real connection established, hence the specified remote ip can be unreachable.
+        /// </summary>
+        /// <returns>IP-Address or empty string, if ipaddress could not be detectet</returns>
+        private static string LocalIPAddress()
         {
-            if ((Environment.OSVersion.Version.Major > 5)
-                || ((Environment.OSVersion.Version.Major == 5) && (Environment.OSVersion.Version.Minor >= 1)))
+            try
             {
-                return NativeMethods.IsWow64Process(process.Handle, out bool retVal) && retVal;
+                if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+                {
+                    return string.Empty;
+                }
+                using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+                {
+                    socket.Connect("1.1.1.1", 65530);
+                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                    return endPoint.Address.ToString();
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return string.Empty;
+            }
+        }
 
-            return false; // not on 64-bit Windows Emulator
+        private static DateTime GetBuildDateTime()
+        {
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            var timestamp = new TimeSpan(
+                TimeSpan.TicksPerDay * version.Build + // days since 1 January 2000
+                TimeSpan.TicksPerSecond * 2 * version.Revision); // seconds since midnight, (multiply by 2 to get original)
+            var buildDateTime = new DateTime(2000, 1, 1).Add(timestamp);
+            return buildDateTime;
         }
     }
 }

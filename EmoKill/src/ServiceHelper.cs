@@ -17,6 +17,8 @@ namespace ZiMADE.EmoKill
 {
     public static class ServiceHelper
     {
+        private static string _OldServiceName = string.Empty;
+
         public static ServiceControllerStatus? GetServiceState()
         {
             ServiceControllerStatus? retval = null;
@@ -24,10 +26,20 @@ namespace ZiMADE.EmoKill
             {
                 var sc = new ServiceController(Settings.ServiceName, Settings.ComputerName);
                 retval = sc.Status;
+                _OldServiceName = string.Empty;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Settings.Log?.Error(ex);
+                try
+                {
+                    var sc = new ServiceController(Settings.ProductName, Settings.ComputerName);
+                    retval = sc.Status;
+                    _OldServiceName = Settings.ProductName;
+                }
+                catch (Exception ex)
+                {
+                    Settings.Log?.Debug(ex);
+                }
             }
             return retval;
         }
@@ -37,7 +49,7 @@ namespace ZiMADE.EmoKill
             var result = string.Empty;
             var serviceState = GetServiceState();
             var serviceAlreadyInstalled = serviceState != null;
-            if (serviceAlreadyInstalled && Settings.Is64BitOperatingSystem && Settings.Is64BitProcess && Directory.Exists(Settings.InstallX86Folder))
+            if (serviceAlreadyInstalled && (!string.IsNullOrWhiteSpace(_OldServiceName) || Settings.Is64BitOperatingSystem && Settings.Is64BitProcess && Directory.Exists(Settings.InstallX86Folder)))
             {
                 UninstallService();
                 RemoveX86Files();
@@ -54,7 +66,7 @@ namespace ZiMADE.EmoKill
             }
             else
             {
-                result = InstallService(string.Empty);
+                result = InstallService(Settings.ServiceName);
             }
             serviceState = GetServiceState();
             if (serviceState == null)
@@ -66,15 +78,22 @@ namespace ZiMADE.EmoKill
 
         public static string UninstallService()
         {
-            return InstallService("/uninstall");
+            if (string.IsNullOrWhiteSpace(_OldServiceName))
+            {
+                return InstallService(Settings.ServiceName, "/uninstall");
+            }
+            else
+            {
+                return InstallService(_OldServiceName, "/uninstall");
+            }
         }
 
-        private static string InstallService(string cmd)
+        private static string InstallService(string serviceName, string cmd = "")
         {
-            Settings.Log?.Debug($"{nameof(InstallService)}({cmd})");
+            Settings.Log?.Debug($"{nameof(InstallService)}({serviceName}, {cmd})");
             var retval = string.Empty;
-            var instUtilx86 = @"C:\Windows\Microsoft.NET\Framework\v4.0.30319\installutil.exe";
-            var instUtilx64 = @"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\installutil.exe";
+            var instUtilx86 = Path.Combine(Settings.WindowsFolder, @"Microsoft.NET\Framework\v4.0.30319\installutil.exe");
+            var instUtilx64 = Path.Combine(Settings.WindowsFolder, @"Microsoft.NET\Framework64\v4.0.30319\installutil.exe");
             var installUtil = string.Empty;
             if (File.Exists(instUtilx64))
             {
@@ -84,9 +103,9 @@ namespace ZiMADE.EmoKill
             {
                 installUtil = instUtilx86;
             }
-            if (!string.IsNullOrEmpty(installUtil))
+            if (!string.IsNullOrWhiteSpace(installUtil))
             {
-                var serviceFile = Path.Combine(Settings.InstallFolder, $"{Settings.ServiceName}.exe");
+                var serviceFile = Path.Combine(Settings.InstallFolder, $"{serviceName}.exe");
                 if (File.Exists(serviceFile))
                 {
                     retval = StartProgam(installUtil, $"\"{serviceFile}\" {cmd}");
@@ -203,7 +222,7 @@ namespace ZiMADE.EmoKill
         {
             try
             {
-                if (!string.IsNullOrEmpty(Settings.Log?.LogFileName) && File.Exists(Settings.Log?.LogFileName))
+                if (!string.IsNullOrWhiteSpace(Settings.Log?.LogFileName) && File.Exists(Settings.Log?.LogFileName))
                 {
                     Settings.Log?.Info($"Show LogFile '{Settings.Log?.LogFileName}'");
                     Process process = new Process();
@@ -226,7 +245,7 @@ namespace ZiMADE.EmoKill
         {
             try
             {
-                if (!string.IsNullOrEmpty(Settings.Log?.LogFileName) && File.Exists(Settings.Log?.LogFileName))
+                if (!string.IsNullOrWhiteSpace(Settings.Log?.LogFileName) && File.Exists(Settings.Log?.LogFileName))
                 {
                     Settings.Log?.Info($"Delete LogFile '{Settings.Log?.LogFileName}'");
                     File.Delete(Settings.Log?.LogFileName);
@@ -249,16 +268,7 @@ namespace ZiMADE.EmoKill
             {
                 var sysInfo = new Entity.SystemInfo();
                 sysInfo.SaveToJsonFile();
-                var lines = sysInfo.ToJson().Replace("{", "").Replace("}", "").Replace(",", "").Replace("\"", "").Replace("\\\\", "\\").Replace("\r", "").Split('\n');
-                var sb = new StringBuilder();
-                foreach (var line in lines)
-                {
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        sb.AppendLine(line);
-                    }
-                }
-                retval = sb.ToString();
+                retval = sysInfo.ToJsonString();
             }
             catch (Exception ex)
             {

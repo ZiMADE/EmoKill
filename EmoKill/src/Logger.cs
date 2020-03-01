@@ -10,12 +10,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ZiMADE.EmoKill
 {
-    public enum LogLevel
+    internal enum LogLevel
     {
         NOLOG = 0,
         FATAL = 1,
@@ -25,99 +26,100 @@ namespace ZiMADE.EmoKill
         DEBUG = 5
     }
 
-    public class Logger
+    internal class Logger
     {
-        private List<string> logEntries = new List<string>();
-        private bool isBusy = false;
+        private string _AssemblyName => Assembly.GetCallingAssembly().GetName().Name;
+        private List<string> _LogEntries = new List<string>();
+        private bool _IsBusy = false;
 
-        public string LogFileName { get; set; }
-        public string EventLogName { get; set; }
-        public LogLevel Level { get; set; }
+        internal string LogFileName { get; set; }
+        internal string EventLogName { get; set; }
+        internal LogLevel Level { get; set; }
 
-        public Logger()
+        internal Logger()
         {
             Level = LogLevel.INFO;
             //LogFileName = Path.Combine(Settings.WindowsFolder, "Temp", string.Concat(Settings.ProductName, ".log"));
             LogFileName = Path.Combine(Settings.DataFolder, string.Concat(Settings.ComputerName, "_Log.txt"));
             EventLogName = "Application";
-            if (!string.IsNullOrEmpty(LogFileName))
+            if (!string.IsNullOrWhiteSpace(LogFileName))
                 Info($">>>>> Log to file '{LogFileName}' startet");
         }
 
 
-        public void Debug(string msg)
+        internal void Debug(string msg)
         {
             if (Level >= LogLevel.DEBUG)
                 AddLogEntry(LogLevel.DEBUG, msg, 0, null);
         }
 
-        public void Debug(Exception ex)
+        internal void Debug(Exception ex)
         {
             if (Level >= LogLevel.DEBUG)
                 AddLogEntry(LogLevel.DEBUG, ex.Message, 0, ex);
         }
 
-        public void Debug(string msg, Exception ex)
+        internal void Debug(string msg, Exception ex)
         {
             if (Level >= LogLevel.DEBUG)
                 AddLogEntry(LogLevel.DEBUG, msg, 0, ex);
         }
 
-        public void Info(string msg, int eventId = 0)
+        internal void Info(string msg, int eventId = 0)
         {
             if (Level >= LogLevel.INFO)
                 AddLogEntry(LogLevel.INFO, msg, eventId, null);
         }
 
-        public void Warn(string msg, int eventId = 0)
+        internal void Warn(string msg, int eventId = 0)
         {
             if (Level >= LogLevel.WARN)
                 AddLogEntry(LogLevel.WARN, msg, eventId, null);
         }
 
-        public void Warn(Exception ex)
+        internal void Warn(Exception ex)
         {
             if (Level >= LogLevel.WARN)
                 AddLogEntry(LogLevel.WARN, ex.Message, 0, ex);
         }
 
-        public void Warn(string msg, Exception ex)
+        internal void Warn(string msg, Exception ex)
         {
             if (Level >= LogLevel.WARN)
                 AddLogEntry(LogLevel.WARN, msg, 0, ex);
         }
 
-        public void Error(string msg, int eventId = 0)
+        internal void Error(string msg, int eventId = 0)
         {
             if (Level >= LogLevel.ERROR)
                 AddLogEntry(LogLevel.ERROR, msg, eventId, null);
         }
 
-        public void Error(Exception ex)
+        internal void Error(Exception ex)
         {
             if (Level >= LogLevel.ERROR)
                 AddLogEntry(LogLevel.ERROR, ex.Message, 0, ex);
         }
 
-        public void Error(string msg, Exception ex)
+        internal void Error(string msg, Exception ex)
         {
             if (Level >= LogLevel.ERROR)
                 AddLogEntry(LogLevel.ERROR, msg, 0, ex);
         }
 
-        public void Fatal(string msg)
+        internal void Fatal(string msg)
         {
             if (Level >= LogLevel.FATAL)
                 AddLogEntry(LogLevel.FATAL, msg, 0, null);
         }
 
-        public void Fatal(Exception ex)
+        internal void Fatal(Exception ex)
         {
             if (Level >= LogLevel.FATAL)
                 AddLogEntry(LogLevel.FATAL, ex.Message, 0, ex);
         }
 
-        public void Fatal(string msg, Exception ex)
+        internal void Fatal(string msg, Exception ex)
         {
             if (Level >= LogLevel.FATAL)
                 AddLogEntry(LogLevel.FATAL, msg, 0, ex);
@@ -125,18 +127,18 @@ namespace ZiMADE.EmoKill
 
         private void AddLogEntry(LogLevel level, string msg, int eventId = 0, Exception ex = null)
         {
-            if (string.IsNullOrEmpty(EventLogName))
+            if (string.IsNullOrWhiteSpace(EventLogName))
             {
                 WriteToEventLog(level, msg, eventId, ex);
             }
             var logEntry = ($"{DateTime.Now.ToShortDateString()} {DateTime.Now.ToLongTimeString()}\t{level}\t{msg}");
-            logEntries.Add(logEntry);
-            if (!string.IsNullOrEmpty(ex?.StackTrace))
+            _LogEntries.Add(logEntry);
+            if (!string.IsNullOrWhiteSpace(ex?.StackTrace))
             {
-                logEntries.Add(ex.StackTrace);
+                _LogEntries.Add(ex.StackTrace);
             }
             Console.WriteLine(logEntry);
-            if (!string.IsNullOrEmpty(LogFileName))
+            if (!string.IsNullOrWhiteSpace(LogFileName))
             {
                 SaveToFile();
             }
@@ -149,7 +151,7 @@ namespace ZiMADE.EmoKill
             {
                 try
                 {
-                    if (Settings.IsAdministrator())
+                    if (Settings.IsAdministrator)
                     {
                         using (EventLog eventLog = new EventLog(EventLogName))
                         {
@@ -188,20 +190,20 @@ namespace ZiMADE.EmoKill
         
         private void SaveToFile()
         {
-            if (isBusy) return;
-            isBusy = true;
+            if (_IsBusy) return;
+            _IsBusy = true;
             Task.Run(() =>
             {
                 try
                 {
                     var logLines = new StringBuilder();
-                    while (logEntries.Count > 0)
+                    while (_LogEntries.Count > 0)
                     {
-                        var itemsToSave = new List<string>(logEntries);
+                        var itemsToSave = new List<string>(_LogEntries);
                         foreach (var logEntry in itemsToSave)
                         {
                             logLines.AppendLine(logEntry);
-                            logEntries.Remove(logEntry);
+                            _LogEntries.Remove(logEntry);
                         }
                     }
 
@@ -218,7 +220,7 @@ namespace ZiMADE.EmoKill
                 }
                 finally
                 {
-                    isBusy = false;
+                    _IsBusy = false;
                 }
             });
         }

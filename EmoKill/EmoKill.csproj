@@ -37,11 +37,21 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>..\img\EmoKill.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\EmoKill.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
@@ -56,9 +66,14 @@
   <ItemGroup>
     <Compile Include="Properties\SharedAssemblyInfo.cs" />
     <Compile Include="src\Crypto.cs" />
+    <Compile Include="src\EmoCheck\ZiMADE.cs" />
+    <Compile Include="src\EmoCheck\SOPHOS.cs" />
     <Compile Include="src\Entity\AbstractInfo.cs" />
-    <Compile Include="src\EmoCheck.cs" />
+    <Compile Include="src\EmoCheck\JPCERT.cs" />
+    <Compile Include="src\Config.cs" />
     <Compile Include="src\Entity\SystemInfo.cs" />
+    <Compile Include="src\Enums.cs" />
+    <Compile Include="src\InfoDispatcher.cs" />
     <Compile Include="src\Logger.cs" />
     <Compile Include="src\NativeMethods.cs" />
     <Compile Include="src\Entity\CheckInfo.cs" />
@@ -66,6 +81,7 @@
     <Compile Include="src\ProcessWatcher.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\Runner.cs" />
     <Compile Include="src\ServiceHelper.cs" />
     <Compile Include="src\Settings.cs" />
     <Compile Include="src\WinService.cs">
