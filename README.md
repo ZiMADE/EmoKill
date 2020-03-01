@@ -34,17 +34,17 @@ When EmoKill starts, there will be made a check of all running processes on your
 
 Detection and killing of Emotet processes are logged to a logfile `%programdata%\EmoKill\{computername}_Log.txt` and also to the application eventlog.
 Additionally there will be created several json-files at folder `%programdata%\EmoKill`:
-- `{computername}_EmoCheck_Keywords_{timestamp}.json`
+- `{computername}_EmoCheck_Keywords_{timestamp}_{UID}.json`
   - Each file contains information about which process name is checked and killed (if detected). The source of the process name is the list of keywords. 
-- `{computername}_EmoCheck_Registry_{timestamp}.json`
+- `{computername}_EmoCheck_Registry_{timestamp}_{UID}.json`
   - Each file contains information about which process name is checked and killed (if detected). The source of the process name is the registry. 
-- `{computername}_EmoCheck_Services_{timestamp}.json`
+- `{computername}_EmoCheck_Services_{timestamp}_{UID}.json`
   - Each file contains information about which process name is checked and killed (if detected). The source of the process name is the list of windows services. 
-- `{computername}_EmoCheck_Test_{timestamp}.json`
+- `{computername}_EmoCheck_Test_{timestamp}_{UID}.json`
   - Each file contains information about which process name is checked and killed (if detected). The source of the process name is the test scenario of EmoKill. 
-- `{computername}_EmoKill_{timestamp}.json`
+- `{computername}_EmoKill_{timestamp}_{UID}.json`
   - These files contains information about killed processes. 
-- `{computername}_SysInfo_{timestamp}.json`
+- `{computername}_SysInfo_{timestamp}_{UID}.json`
   - These files contain system information that may be helpful in troubleshooting.
 
 After a reboot of your computer, the installed EmoKill service will automatically restart.
