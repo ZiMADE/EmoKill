@@ -19,17 +19,17 @@ namespace ZiMADE.EmoKill
 {
     public static class Settings
     {
-        public static string ProductName { get; private set; }
-        public static string ProductVersion { get; private set; }
-        public static DateTime ProductDate { get; private set; }
-        public static string ProductRepository { get; private set; }
+        public static string ProductName => ((AssemblyProductAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyProductAttribute), false))?.Product;
+        public static string ProductVersion => ((AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyInformationalVersionAttribute), false))?.InformationalVersion;
+        public static DateTime ProductDate => GetBuildDateTime();
+        public static string ProductRepository => ((AssemblyConfigurationAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyConfigurationAttribute), false))?.Configuration;
+        internal static string ServiceName => Assembly.GetExecutingAssembly().GetName().Name;
+        internal static string ServiceDescription => ((AssemblyDescriptionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyDescriptionAttribute), false)).Description;
         public static bool IsAdministrator { get; private set; }
 
         internal static Logger Log { get; private set; }
         internal static Config Config { get; private set; }
         internal static string AssemblyVersion { get; private set; }
-        internal static string ServiceName { get; private set; }
-        internal static string ServiceDescription { get; private set; }
         internal static string EntryAssembly { get; private set; }
         internal static string ExecutingAssembly { get; private set; }
         internal static string ExecutingFolder { get; private set; }
@@ -48,13 +48,7 @@ namespace ZiMADE.EmoKill
         {
             if (Log == null)
             {
-                ProductName = ((AssemblyProductAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyProductAttribute), false))?.Product;
-                ProductVersion = ((AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyInformationalVersionAttribute), false))?.InformationalVersion;
-                ProductDate = GetBuildDateTime();
-                ProductRepository = ((AssemblyConfigurationAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyConfigurationAttribute), false))?.Configuration;
                 AssemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-                ServiceName = Assembly.GetExecutingAssembly().GetName().Name;
-                ServiceDescription = ((AssemblyDescriptionAttribute)Attribute.GetCustomAttribute(Assembly.GetExecutingAssembly(), typeof(AssemblyDescriptionAttribute), false)).Description;
                 EntryAssembly = Assembly.GetEntryAssembly().GetName().FullName;
                 ExecutingAssembly = Assembly.GetExecutingAssembly().GetName().FullName;
                 ExecutingFolder = AppDomain.CurrentDomain.BaseDirectory;
